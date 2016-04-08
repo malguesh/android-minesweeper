@@ -13,7 +13,9 @@ import android.view.View;
 public class CustomView extends View {
 
     private Rect[][] board;
+    private Rect cell;
     private Paint paintCell;
+    private Paint paintLine;
 
     public CustomView(Context context) {
         super(context);
@@ -33,27 +35,31 @@ public class CustomView extends View {
     private void init() {
         board = new Rect[10][10];
         paintCell = new Paint(Paint.ANTI_ALIAS_FLAG);
+        paintLine = new Paint(Paint.ANTI_ALIAS_FLAG);
 
-        paintCell.setColor(Color.WHITE);
-        paintCell.setStyle(Style.STROKE);
-        paintCell.setStrokeWidth(1);
+        paintCell.setColor(Color.BLACK);
+        paintLine.setColor(Color.WHITE);
+        paintLine.setStyle(Style.STROKE);
+        paintLine.setStrokeWidth(2.0f);
     }
 
     public void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-//        paintCell.setStyle(Style.FILL);
-
         int boardWidth = canvas.getWidth();
         int boardHeight = canvas.getHeight();
+        int endWidth = boardWidth / 10;
+        int endHeight = boardHeight / 10;
 
         for (int i = 0; i < 10; i++) {
             for (int j = 0; j < 10; j++) {
-                board[i][j] = new Rect(boardWidth / (-10), boardHeight / (-10), boardWidth / 10, boardHeight / 10);
+                int startWidth = i * endWidth;
+                int startHeight = j * endHeight;
+                board[i][j] = new Rect(startWidth, startHeight, startWidth + endWidth, startHeight + endHeight);
+
+                canvas.drawRect(board[i][j], paintLine);
                 canvas.drawRect(board[i][j], paintCell);
-                canvas.translate(boardWidth / 10, 0);
             }
-            canvas.translate(boardWidth * -1, boardHeight / 10);
         }
     }
 
