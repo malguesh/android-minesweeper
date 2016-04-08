@@ -6,8 +6,8 @@
 
     <ramahe_p.android_minesweeper.CustomView
         android:layout_width="match_parent"
-        android:layout_height="300dp"
-        android:background="@android:color/black"/>
+        android:layout_height="wrap_content"
+        android:background="@android:color/black" />
 
     <Button
         android:id="@+id/button_reset"

@@ -5,6 +5,7 @@ import android.graphics.Canvas;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.TextView;
 
 public class CustomView extends View {
 
@@ -29,6 +30,7 @@ public class CustomView extends View {
 
     public void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+
     }
 
     public boolean onTouchEvent(MotionEvent event) {
@@ -37,9 +39,6 @@ public class CustomView extends View {
 
     @Override
     public void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-
-        // TODO: fill the method to change the customview as a square
-        // TODO: call the setMeasureDimension(width, height)
+        super.onMeasure(widthMeasureSpec, widthMeasureSpec);
     }
 }
