@@ -9,6 +9,13 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Random;
+import java.util.Set;
+
 public class CustomView extends View {
 
     // The states of the cells to facilitate the change of the cell
@@ -19,7 +26,8 @@ public class CustomView extends View {
         ONE,
         TWO,
         THREE,
-        MINE
+        MINE,
+        MINE_CLICKED
     }
 
     /**
@@ -85,20 +93,43 @@ public class CustomView extends View {
         paintTwo.setColor(Color.GREEN);
         paintThree.setColor(Color.YELLOW);
 
-        fillInitBoard();
+        fillBoard();
+    }
+
+    private void putMines() {
+        Random rand = new Random();
+
+        int count = 0;
+        while (count < 20) {
+            for (int mine = 0; mine < 20; mine++) {
+                int width = rand.nextInt(9);
+                int height = rand.nextInt(9);
+
+                if (board[width][height].getCellState() != cellState.MINE) {
+                    board[width][height].setCellState(cellState.MINE);
+                    count++;
+                }
+                // if there's already 20 mines we stop
+                if (count == 20) {
+                    break;
+                }
+            }
+            System.out.println("count: " + count);
+        }
     }
 
     /**
      * Fills the board on its initial state
      * Used when we launch or reset the game
      */
-    private void fillInitBoard(){
+    private void fillBoard() {
         for (int i = 0; i < 10; i++) {
             for (int j = 0; j < 10; j++) {
                 board[i][j] = new Cell();
                 board[i][j].setCellState(cellState.INIT);
             }
         }
+        putMines();
     }
 
     public void onDraw(Canvas canvas) {
@@ -117,14 +148,13 @@ public class CustomView extends View {
 
                 canvas.drawRect(startWidth, startHeight, startWidth + endWidth, startHeight + endHeight, paintLine);
 
-                if (board[i][j].getCellState() == cellState.INIT) {
+                if (board[i][j].getCellState() == cellState.INIT || board[i][j].getCellState() == cellState.MINE) {
                     canvas.drawRect(startWidth, startHeight, startWidth + endWidth, startHeight + endHeight, paintCell);
                 } else if (board[i][j].state == cellState.COVERED) {
                     canvas.drawRect(startWidth, startHeight, startWidth + endWidth, startHeight + endHeight, paintCovered);
-                } else if (board[i][j].state == cellState.MINE) {
+                } else if (board[i][j].state == cellState.MINE_CLICKED) {
                     canvas.drawRect(startWidth, startHeight, startWidth + endWidth, startHeight + endHeight, paintMine);
-                } else
-                    canvas.drawRect(startWidth, startHeight, startWidth + endWidth, startHeight + endHeight, paintCell);
+                }
             }
         }
         canvas.restore();
@@ -136,10 +166,16 @@ public class CustomView extends View {
             // get the exact cell I click by getting the values of the cell array
             // not by getting the coordinates on the custom view
             int boardWidth = (int) event.getX() * 10 / getMeasuredWidth();
-            int boardHeight =  (int) event.getY() * 10 / getMeasuredHeight();
+            int boardHeight = (int) event.getY() * 10 / getMeasuredHeight();
+
+//            System.out.println("board: " + board[boardWidth][boardHeight].getCellState());
 
             // Basic cover of the cell
-            if (board[boardWidth][boardHeight].getCellState() != cellState.COVERED) {
+            if (board[boardWidth][boardHeight].getCellState() == cellState.MINE || board[boardWidth][boardHeight].getCellState() == cellState.MINE_CLICKED) {
+                board[boardWidth][boardHeight].setCellState(cellState.MINE_CLICKED);
+                invalidate();
+                return true;
+            } else {
                 board[boardWidth][boardHeight].setCellState(cellState.COVERED);
                 invalidate();
                 return true;
