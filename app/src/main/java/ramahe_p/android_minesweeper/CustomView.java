@@ -18,11 +18,12 @@ public class CustomView extends View {
         INIT,
         COVERED,
         MARKED,
-        ONE,
-        TWO,
-        THREE,
-        MINE,
-        MINE_CLICKED
+        MINE, MINE_CLICKED,
+        ONE, ONE_CLICKED,
+        TWO, TWO_CLICKED,
+        THREE, THREE_CLICKED,
+        FOUR, FOUR_CLICKED, FIVE_CLICKED, SIX_CLICKED, SEVEN_CLICKED, EIGHT_CLICKED
+
     }
 
     /**
@@ -47,7 +48,8 @@ public class CustomView extends View {
 
     private Cell[][] board;
     private Paint paintCell, paintLine, paintCovered, paintMarked, paintMine;
-    private Paint paintOne, paintTwo, paintThree, paintMineText;
+    private Paint paintTextMine, paintTextOne, paintTextTwo, paintTextThree, paintTextFour;
+    private int minesNumber = 0;
 
     public CustomView(Context context) {
         super(context);
@@ -73,10 +75,11 @@ public class CustomView extends View {
         paintCovered = new Paint(Paint.ANTI_ALIAS_FLAG);
         paintMarked = new Paint(Paint.ANTI_ALIAS_FLAG);
         paintMine = new Paint(Paint.ANTI_ALIAS_FLAG);
-        paintOne = new Paint(Paint.ANTI_ALIAS_FLAG);
-        paintTwo = new Paint(Paint.ANTI_ALIAS_FLAG);
-        paintThree = new Paint(Paint.ANTI_ALIAS_FLAG);
-        paintMineText = new Paint(Paint.ANTI_ALIAS_FLAG);
+        paintTextMine = new Paint(Paint.ANTI_ALIAS_FLAG);
+        paintTextOne = new Paint(Paint.ANTI_ALIAS_FLAG);
+        paintTextTwo = new Paint(Paint.ANTI_ALIAS_FLAG);
+        paintTextThree = new Paint(Paint.ANTI_ALIAS_FLAG);
+        paintTextFour = new Paint(Paint.ANTI_ALIAS_FLAG);
 
         paintCell.setColor(Color.BLACK);
         paintLine.setColor(Color.WHITE);
@@ -85,16 +88,20 @@ public class CustomView extends View {
         paintCovered.setColor(Color.GRAY);
         paintMarked.setColor(Color.YELLOW);
         paintMine.setColor(Color.RED);
-        paintOne.setColor(Color.BLUE);
-        paintTwo.setColor(Color.GREEN);
-        paintThree.setColor(Color.YELLOW);
 
-        // TODO: change the paintMineText size to be bigger
-        paintMineText.setColor(Color.BLACK);
+        // TODO: change the paintTexts size to be bigger
+        paintTextMine.setColor(Color.BLACK);
+        paintTextOne.setColor(Color.BLUE);
+        paintTextTwo.setColor(Color.GREEN);
+        paintTextThree.setColor(Color.YELLOW);
+        paintTextFour.setColor(Color.RED);
 
         fillBoard();
     }
 
+    /**
+     * Put randomly 20 mines on the board
+     */
     private void putMines() {
         Random rand = new Random();
 
@@ -113,7 +120,96 @@ public class CustomView extends View {
                     break;
                 }
             }
-            System.out.println("count: " + count);
+        }
+    }
+
+    /**
+     * Get the exact number of mine around every cells
+     *
+     * @param width
+     * @param height
+     * @return
+     */
+    private int getMinesAround(int width, int height) {
+        if (board[width][height].getCellState() != cellState.MINE) {
+            minesNumber = 0;
+
+            if (width > 0) {
+                Cell left = board[width - 1][height];
+                if (left.getCellState() == cellState.MINE || left.getCellState() == cellState.MINE_CLICKED)
+                    minesNumber++;
+            }
+            if (height > 0) {
+                Cell up = board[width][height - 1];
+                if (up.getCellState() == cellState.MINE || up.getCellState() == cellState.MINE_CLICKED)
+                    minesNumber++;
+            }
+            if (width < 9) {
+                // 2 1
+                Cell right = board[width + 1][height];
+                if (right.getCellState() == cellState.MINE || right.getCellState() == cellState.MINE_CLICKED)
+                    minesNumber++;
+            }
+            if (height < 9) {
+                Cell down = board[width][height + 1];
+                if (down.getCellState() == cellState.MINE || down.getCellState() == cellState.MINE_CLICKED)
+                    minesNumber++;
+            }
+            if (width > 0 && height > 0) {
+                Cell diagLeftUp = board[width - 1][height - 1];
+                if (diagLeftUp.getCellState() == cellState.MINE || diagLeftUp.getCellState() == cellState.MINE_CLICKED)
+                    minesNumber++;
+            }
+            if (width < 9 && height < 9) {
+                Cell diagRightDown = board[width + 1][height + 1];
+                if (diagRightDown.getCellState() == cellState.MINE || diagRightDown.getCellState() == cellState.MINE_CLICKED)
+                    minesNumber++;
+            }
+            if (width > 0 && height < 9) {
+                Cell diagLeftDown = board[width - 1][height + 1];
+                if (diagLeftDown.getCellState() == cellState.MINE || diagLeftDown.getCellState() == cellState.MINE_CLICKED) {
+                    minesNumber++;
+                }
+            }
+            if (width < 9 && height > 0) {
+                Cell diagRightUp = board[width + 1][height - 1];
+                if (diagRightUp.getCellState() == cellState.MINE || diagRightUp.getCellState() == cellState.MINE_CLICKED) {
+                    minesNumber++;
+                }
+            }
+        }
+        return minesNumber;
+    }
+
+    /**
+     * Fill the board with the state (mine, number...)
+     * corresponding on the content of the cell
+     */
+    private void putNumbers() {
+        for (int i = 0; i < 10; i++) {
+            for (int j = 0; j < 10; j++) {
+                if (board[i][j].getCellState() != cellState.MINE) {
+                    minesNumber = getMinesAround(i, j);
+                    System.out.println("MINES ==> " + minesNumber);
+                    switch (minesNumber) {
+                        case 0:
+                            board[i][j].setCellState(cellState.INIT);
+                            break;
+                        case 1:
+                            board[i][j].setCellState(cellState.ONE);
+                            break;
+                        case 2:
+                            board[i][j].setCellState(cellState.TWO);
+                            break;
+                        case 3:
+                            board[i][j].setCellState(cellState.THREE);
+                            break;
+                        default:
+                            board[i][j].setCellState(cellState.FOUR);
+                            break;
+                    }
+                }
+            }
         }
     }
 
@@ -129,6 +225,7 @@ public class CustomView extends View {
             }
         }
         putMines();
+        putNumbers();
     }
 
     public void onDraw(Canvas canvas) {
@@ -147,17 +244,41 @@ public class CustomView extends View {
 
                 canvas.drawRect(startWidth, startHeight, startWidth + endWidth, startHeight + endHeight, paintLine);
 
-                if (board[i][j].getCellState() == cellState.INIT || board[i][j].getCellState() == cellState.MINE) {
-                    canvas.drawRect(startWidth, startHeight, startWidth + endWidth, startHeight + endHeight, paintCell);
-                } else if (board[i][j].state == cellState.COVERED) {
+                // Check the state of the cell to put the good thing
+                if (board[i][j].getCellState() == cellState.COVERED) {
                     canvas.drawRect(startWidth, startHeight, startWidth + endWidth, startHeight + endHeight, paintCovered);
-                } else if (board[i][j].state == cellState.MINE_CLICKED) {
+                } else if (board[i][j].getCellState() == cellState.MINE_CLICKED) {
                     canvas.drawRect(startWidth, startHeight, startWidth + endWidth, startHeight + endHeight, paintMine);
-                    canvas.drawText("M", startWidth + endWidth / 2, startHeight + endHeight / 2, paintCell);
+                    canvas.drawText("M", startWidth + endWidth / 2, startHeight + endHeight / 2, paintTextMine);
+                } else if (board[i][j].getCellState() == cellState.ONE_CLICKED) {
+                    canvas.drawRect(startWidth, startHeight, startWidth + endWidth, startHeight + endHeight, paintCovered);
+                    canvas.drawText("1", startWidth + endWidth / 2, startHeight + endHeight / 2, paintTextOne);
+                } else if (board[i][j].getCellState() == cellState.TWO_CLICKED) {
+                    canvas.drawRect(startWidth, startHeight, startWidth + endWidth, startHeight + endHeight, paintCovered);
+                    canvas.drawText("2", startWidth + endWidth / 2, startHeight + endHeight / 2, paintTextTwo);
+                } else if (board[i][j].getCellState() == cellState.THREE_CLICKED) {
+                    canvas.drawRect(startWidth, startHeight, startWidth + endWidth, startHeight + endHeight, paintCovered);
+                    canvas.drawText("3", startWidth + endWidth / 2, startHeight + endHeight / 2, paintTextThree);
+                } else if (board[i][j].getCellState() == cellState.FOUR_CLICKED) {
+                    canvas.drawRect(startWidth, startHeight, startWidth + endWidth, startHeight + endHeight, paintCovered);
+                    canvas.drawText("4", startWidth + endWidth / 2, startHeight + endHeight / 2, paintTextFour);
+                } else if (board[i][j].getCellState() == cellState.FIVE_CLICKED) {
+                    canvas.drawRect(startWidth, startHeight, startWidth + endWidth, startHeight + endHeight, paintCovered);
+                    canvas.drawText("5", startWidth + endWidth / 2, startHeight + endHeight / 2, paintTextFour);
+                } else if (board[i][j].getCellState() == cellState.SIX_CLICKED) {
+                    canvas.drawRect(startWidth, startHeight, startWidth + endWidth, startHeight + endHeight, paintCovered);
+                    canvas.drawText("6", startWidth + endWidth / 2, startHeight + endHeight / 2, paintTextFour);
+                } else if (board[i][j].getCellState() == cellState.SEVEN_CLICKED) {
+                    canvas.drawRect(startWidth, startHeight, startWidth + endWidth, startHeight + endHeight, paintCovered);
+                    canvas.drawText("7", startWidth + endWidth / 2, startHeight + endHeight / 2, paintTextFour);
+                } else if (board[i][j].getCellState() == cellState.EIGHT_CLICKED) {
+                    canvas.drawRect(startWidth, startHeight, startWidth + endWidth, startHeight + endHeight, paintCovered);
+                    canvas.drawText("8", startWidth + endWidth / 2, startHeight + endHeight / 2, paintTextFour);
+                } else {
+                    canvas.drawRect(startWidth, startHeight, startWidth + endWidth, startHeight + endHeight, paintCell);
                 }
             }
         }
-        canvas.restore();
     }
 
     public boolean onTouchEvent(MotionEvent event) {
@@ -167,21 +288,53 @@ public class CustomView extends View {
             // not by getting the coordinates on the custom view
             int boardWidth = (int) event.getX() * 10 / getMeasuredWidth();
             int boardHeight = (int) event.getY() * 10 / getMeasuredHeight();
+            Cell touchedCell = board[boardWidth][boardHeight];
 
-//            System.out.println("board: " + board[boardWidth][boardHeight].getCellState());
-
-            // Basic cover of the cell
-            if (board[boardWidth][boardHeight].getCellState() == cellState.MINE || board[boardWidth][boardHeight].getCellState() == cellState.MINE_CLICKED) {
-                board[boardWidth][boardHeight].setCellState(cellState.MINE_CLICKED);
+            if (touchedCell.getCellState() == cellState.MINE || touchedCell.getCellState() == cellState.MINE_CLICKED) {
+                touchedCell.setCellState(cellState.MINE_CLICKED);
+                invalidate();
+                return true;
+            } else if (touchedCell.getCellState() == cellState.ONE || touchedCell.getCellState() == cellState.ONE_CLICKED) {
+                board[boardWidth][boardHeight].setCellState(cellState.ONE_CLICKED);
+                invalidate();
+                return true;
+            } else if (touchedCell.getCellState() == cellState.TWO || touchedCell.getCellState() == cellState.TWO_CLICKED) {
+                board[boardWidth][boardHeight].setCellState(cellState.TWO_CLICKED);
+                invalidate();
+                return true;
+            } else if (touchedCell.getCellState() == cellState.THREE || touchedCell.getCellState() == cellState.THREE_CLICKED) {
+                touchedCell.setCellState(cellState.THREE_CLICKED);
+                invalidate();
+                return true;
+            } else if (touchedCell.getCellState() == cellState.FOUR || touchedCell.getCellState() == cellState.FOUR_CLICKED) {
+                switch (getMinesAround(boardWidth, boardHeight)) {
+                    case 4:
+                        touchedCell.setCellState(cellState.FOUR_CLICKED);
+                        break;
+                    case 5:
+                        touchedCell.setCellState(cellState.FIVE_CLICKED);
+                        break;
+                    case 6:
+                        touchedCell.setCellState(cellState.SIX_CLICKED);
+                        break;
+                    case 7:
+                        touchedCell.setCellState(cellState.SEVEN_CLICKED);
+                        break;
+                    case 8:
+                        touchedCell.setCellState(cellState.EIGHT_CLICKED);
+                        break;
+                    default:
+                        touchedCell.setCellState(cellState.COVERED);
+                        break;
+                }
                 invalidate();
                 return true;
             } else {
-                board[boardWidth][boardHeight].setCellState(cellState.COVERED);
+                touchedCell.setCellState(cellState.COVERED);
                 invalidate();
                 return true;
             }
         }
-
         return super.onTouchEvent(event);
     }
 
