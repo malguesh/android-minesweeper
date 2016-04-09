@@ -9,12 +9,7 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Random;
-import java.util.Set;
 
 public class CustomView extends View {
 
@@ -52,7 +47,7 @@ public class CustomView extends View {
 
     private Cell[][] board;
     private Paint paintCell, paintLine, paintCovered, paintMarked, paintMine;
-    private Paint paintOne, paintTwo, paintThree;
+    private Paint paintOne, paintTwo, paintThree, paintMineText;
 
     public CustomView(Context context) {
         super(context);
@@ -81,6 +76,7 @@ public class CustomView extends View {
         paintOne = new Paint(Paint.ANTI_ALIAS_FLAG);
         paintTwo = new Paint(Paint.ANTI_ALIAS_FLAG);
         paintThree = new Paint(Paint.ANTI_ALIAS_FLAG);
+        paintMineText = new Paint(Paint.ANTI_ALIAS_FLAG);
 
         paintCell.setColor(Color.BLACK);
         paintLine.setColor(Color.WHITE);
@@ -92,6 +88,9 @@ public class CustomView extends View {
         paintOne.setColor(Color.BLUE);
         paintTwo.setColor(Color.GREEN);
         paintThree.setColor(Color.YELLOW);
+
+        // TODO: change the paintMineText size to be bigger
+        paintMineText.setColor(Color.BLACK);
 
         fillBoard();
     }
@@ -154,6 +153,7 @@ public class CustomView extends View {
                     canvas.drawRect(startWidth, startHeight, startWidth + endWidth, startHeight + endHeight, paintCovered);
                 } else if (board[i][j].state == cellState.MINE_CLICKED) {
                     canvas.drawRect(startWidth, startHeight, startWidth + endWidth, startHeight + endHeight, paintMine);
+                    canvas.drawText("M", startWidth + endWidth / 2, startHeight + endHeight / 2, paintCell);
                 }
             }
         }
