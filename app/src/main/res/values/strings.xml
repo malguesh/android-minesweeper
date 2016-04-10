@@ -2,6 +2,7 @@
     <string name="app_name">android-minesweeper</string>
     <string name="reset_game">RESET GAME</string>
     <string name="marking_mode">MARKING MODE</string>
-    <string name="marked_mines">Marked mines:</string>
-    <string name="total_mines">Total mines:</string>
+    <string name="uncover_mode">UNCOVER MODE</string>
+    <string name="marked_mines">Marked mines: 0</string>
+    <string name="total_mines">Total mines: 20</string>
 </resources>

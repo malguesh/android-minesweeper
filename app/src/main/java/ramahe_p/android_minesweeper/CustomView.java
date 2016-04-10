@@ -8,8 +8,6 @@ import android.graphics.Paint.Style;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.Button;
-import android.widget.TextView;
 
 import java.util.Random;
 
@@ -24,7 +22,11 @@ public class CustomView extends View {
         ONE, ONE_CLICKED,
         TWO, TWO_CLICKED,
         THREE, THREE_CLICKED,
-        FOUR, FOUR_CLICKED, FIVE_CLICKED, SIX_CLICKED, SEVEN_CLICKED, EIGHT_CLICKED
+        FOUR, FOUR_CLICKED,
+        FIVE, FIVE_CLICKED,
+        SIX, SIX_CLICKED,
+        SEVEN, SEVEN_CLICKED,
+        EIGHT, EIGHT_CLICKED
 
     }
 
@@ -34,6 +36,9 @@ public class CustomView extends View {
      */
     public static class Cell {
         cellState state;
+        boolean isMine = false;
+        boolean isNumber = false;
+        boolean isClicked = false;
 
         public Cell() {
             state = cellState.INIT;
@@ -53,6 +58,11 @@ public class CustomView extends View {
     private Paint paintCell, paintLine, paintCovered, paintMarked, paintMine;
     private Paint paintTextMine, paintTextOne, paintTextTwo, paintTextThree, paintTextFour;
     private int minesNumber = 0;
+    public boolean isMarkingMode = false;
+    public int markedMines = 0;
+
+    // last state of a cell to go back in it when we erase a marked cell
+    cellState lastState;
 
     // -- LifeCycle
     public CustomView(Context context) {
@@ -118,7 +128,9 @@ public class CustomView extends View {
                 canvas.drawRect(startWidth, startHeight, startWidth + endWidth, startHeight + endHeight, paintLine);
 
                 // Check the state of the cell to put the good thing
-                if (board[i][j].getCellState() == cellState.COVERED) {
+                if (board[i][j].getCellState() == cellState.MARKED) {
+                    canvas.drawRect(startWidth, startHeight, startWidth + endWidth, startHeight + endHeight, paintMarked);
+                } else if (board[i][j].getCellState() == cellState.COVERED) {
                     canvas.drawRect(startWidth, startHeight, startWidth + endWidth, startHeight + endHeight, paintCovered);
                 } else if (board[i][j].getCellState() == cellState.MINE_CLICKED) {
                     canvas.drawRect(startWidth, startHeight, startWidth + endWidth, startHeight + endHeight, paintMine);
@@ -152,6 +164,7 @@ public class CustomView extends View {
                 }
             }
         }
+
     }
 
     // -- Events
@@ -165,55 +178,89 @@ public class CustomView extends View {
                 int boardHeight = (int) event.getY() * 10 / getMeasuredHeight();
                 Cell touchedCell = board[boardWidth][boardHeight];
 
-                if (touchedCell.getCellState() == cellState.MINE || touchedCell.getCellState() == cellState.MINE_CLICKED) {
-                    touchedCell.setCellState(cellState.MINE_CLICKED);
-                    touch = false;
-                    invalidate();
-                    return true;
-                } else if (touchedCell.getCellState() == cellState.ONE || touchedCell.getCellState() == cellState.ONE_CLICKED) {
-                    board[boardWidth][boardHeight].setCellState(cellState.ONE_CLICKED);
-                    invalidate();
-                    return true;
-                } else if (touchedCell.getCellState() == cellState.TWO || touchedCell.getCellState() == cellState.TWO_CLICKED) {
-                    board[boardWidth][boardHeight].setCellState(cellState.TWO_CLICKED);
-                    invalidate();
-                    return true;
-                } else if (touchedCell.getCellState() == cellState.THREE || touchedCell.getCellState() == cellState.THREE_CLICKED) {
-                    touchedCell.setCellState(cellState.THREE_CLICKED);
-                    invalidate();
-                    return true;
-                } else if (touchedCell.getCellState() == cellState.FOUR || touchedCell.getCellState() == cellState.FOUR_CLICKED) {
-                    switch (getMinesAround(boardWidth, boardHeight)) {
-                        case 4:
-                            touchedCell.setCellState(cellState.FOUR_CLICKED);
-                            break;
-                        case 5:
-                            touchedCell.setCellState(cellState.FIVE_CLICKED);
-                            break;
-                        case 6:
-                            touchedCell.setCellState(cellState.SIX_CLICKED);
-                            break;
-                        case 7:
-                            touchedCell.setCellState(cellState.SEVEN_CLICKED);
-                            break;
-                        case 8:
-                            touchedCell.setCellState(cellState.EIGHT_CLICKED);
-                            break;
-                        default:
-                            touchedCell.setCellState(cellState.COVERED);
-                            break;
+                if (isMarkingMode) {
+                    if (touchedCell.getCellState() != cellState.MARKED) {
+                        if (!touchedCell.isClicked) {
+                            lastState = touchedCell.getCellState();
+                            touchedCell.setCellState(cellState.MARKED);
+                            markedMines += 1;
+                            invalidate();
+                            return true;
+                        }
+                    } else {
+                        touchedCell.setCellState(lastState);
+                        if (markedMines > 0)
+                            markedMines -= 1;
+                        invalidate();
+                        return true;
                     }
-                    invalidate();
-                    return true;
                 } else {
-                    touchedCell.setCellState(cellState.COVERED);
-                    invalidate();
-                    return true;
+                    if (!touchedCell.isClicked) {
+                        if (touchedCell.getCellState() != cellState.MARKED) {
+                            if (touchedCell.getCellState() == cellState.MINE || touchedCell.getCellState() == cellState.MINE_CLICKED) {
+                                touchedCell.setCellState(cellState.MINE_CLICKED);
+                                touchedCell.isClicked = true;
+                                touch = false;
+                                invalidate();
+                                return true;
+                            } else if (touchedCell.getCellState() == cellState.ONE || touchedCell.getCellState() == cellState.ONE_CLICKED) {
+                                board[boardWidth][boardHeight].setCellState(cellState.ONE_CLICKED);
+                                touchedCell.isClicked = true;
+                                invalidate();
+                                return true;
+                            } else if (touchedCell.getCellState() == cellState.TWO || touchedCell.getCellState() == cellState.TWO_CLICKED) {
+                                board[boardWidth][boardHeight].setCellState(cellState.TWO_CLICKED);
+                                touchedCell.isClicked = true;
+                                invalidate();
+                                return true;
+                            } else if (touchedCell.getCellState() == cellState.THREE || touchedCell.getCellState() == cellState.THREE_CLICKED) {
+                                touchedCell.setCellState(cellState.THREE_CLICKED);
+                                touchedCell.isClicked = true;
+                                invalidate();
+                                return true;
+                            } else if (touchedCell.getCellState() == cellState.FOUR || touchedCell.getCellState() == cellState.FOUR_CLICKED) {
+                                touchedCell.setCellState(cellState.FOUR_CLICKED);
+                                touchedCell.isClicked = true;
+                                invalidate();
+                                return true;
+                            } else if (touchedCell.getCellState() == cellState.FIVE || touchedCell.getCellState() == cellState.FIVE_CLICKED) {
+                                touchedCell.setCellState(cellState.FIVE_CLICKED);
+                                touchedCell.isClicked = true;
+                                invalidate();
+                                return true;
+
+                            } else if (touchedCell.getCellState() == cellState.SIX || touchedCell.getCellState() == cellState.SIX_CLICKED) {
+                                touchedCell.setCellState(cellState.SIX_CLICKED);
+                                touchedCell.isClicked = true;
+                                invalidate();
+                                return true;
+
+                            } else if (touchedCell.getCellState() == cellState.SEVEN || touchedCell.getCellState() == cellState.SEVEN_CLICKED) {
+                                touchedCell.setCellState(cellState.SEVEN_CLICKED);
+                                touchedCell.isClicked = true;
+                                invalidate();
+                                return true;
+
+                            } else if (touchedCell.getCellState() == cellState.EIGHT || touchedCell.getCellState() == cellState.EIGHT_CLICKED) {
+                                touchedCell.setCellState(cellState.EIGHT_CLICKED);
+                                touchedCell.isClicked = true;
+                                invalidate();
+                                return true;
+
+                            } else {
+                                touchedCell.setCellState(cellState.COVERED);
+                                touchedCell.isClicked = true;
+                                invalidate();
+                                return true;
+                            }
+                        }
+                    }
                 }
             }
         }
         return super.onTouchEvent(event);
     }
+
 
     @Override
     public void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
@@ -225,6 +272,7 @@ public class CustomView extends View {
     /**
      * Put randomly 20 mines on the board
      */
+
     private void putMines() {
         Random rand = new Random();
 
@@ -236,6 +284,7 @@ public class CustomView extends View {
 
                 if (board[width][height].getCellState() != cellState.MINE) {
                     board[width][height].setCellState(cellState.MINE);
+                    board[width][height].isMine = true;
                     count++;
                 }
                 // if there's already 20 mines we stop
@@ -313,23 +362,44 @@ public class CustomView extends View {
             for (int j = 0; j < 10; j++) {
                 if (board[i][j].getCellState() != cellState.MINE) {
                     minesNumber = getMinesAround(i, j);
-                    System.out.println("MINES ==> " + minesNumber);
                     switch (minesNumber) {
                         case 0:
                             board[i][j].setCellState(cellState.INIT);
+                            board[i][j].isNumber = true;
                             break;
                         case 1:
                             board[i][j].setCellState(cellState.ONE);
+                            board[i][j].isNumber = true;
                             break;
                         case 2:
                             board[i][j].setCellState(cellState.TWO);
+                            board[i][j].isNumber = true;
                             break;
                         case 3:
                             board[i][j].setCellState(cellState.THREE);
+                            board[i][j].isNumber = true;
                             break;
-                        default:
+                        case 4:
                             board[i][j].setCellState(cellState.FOUR);
+                            board[i][j].isNumber = true;
                             break;
+                        case 5:
+                            board[i][j].setCellState(cellState.FIVE);
+                            board[i][j].isNumber = true;
+                            break;
+                        case 6:
+                            board[i][j].setCellState(cellState.SIX);
+                            board[i][j].isNumber = true;
+                            break;
+                        case 7:
+                            board[i][j].setCellState(cellState.SEVEN);
+                            board[i][j].isNumber = true;
+                            break;
+                        case 8:
+                            board[i][j].setCellState(cellState.EIGHT);
+                            board[i][j].isNumber = true;
+                            break;
+
                     }
                 }
             }
@@ -355,7 +425,7 @@ public class CustomView extends View {
      * Reset game when clicking on the reset button
      */
     public void resetGame() {
-        for (int i = 0; i <10; i++) {
+        for (int i = 0; i < 10; i++) {
             for (int j = 0; j < 10; j++) {
                 board[i][j].setCellState(cellState.INIT);
             }
@@ -363,5 +433,12 @@ public class CustomView extends View {
         init();
         touch = true;
         invalidate();
+    }
+
+    public void setMarkingMode() {
+        if (!isMarkingMode) {
+            isMarkingMode = true;
+        } else
+            isMarkingMode = false;
     }
 }
