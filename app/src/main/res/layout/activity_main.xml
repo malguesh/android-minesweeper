@@ -14,23 +14,32 @@
         android:id="@+id/button_reset"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/reset_game"/>
+        android:text="@string/reset_game" />
 
     <Button
         android:id="@+id/button_marking"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/marking_mode"/>
+        android:text="@string/marking_mode" />
 
     <TextView
         android:id="@+id/tv_marked_mines"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/marked_mines"/>
+        android:text="@string/marked_mines" />
 
     <TextView
         android:id="@+id/tv_total_mines"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/total_mines"/>
+        android:text="@string/total_mines" />
+
+    <TextView
+        android:id="@+id/tv_game_result"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:text=""
+        android:textColor="@android:color/holo_red_dark"/>
+
 </LinearLayout>

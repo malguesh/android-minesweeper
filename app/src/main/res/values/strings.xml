@@ -1,8 +1,15 @@
 <resources>
     <string name="app_name">android-minesweeper</string>
+
+    // -- Buttons
     <string name="reset_game">RESET GAME</string>
     <string name="marking_mode">MARKING MODE</string>
     <string name="uncover_mode">UNCOVER MODE</string>
+
+    // -- TextFields
     <string name="marked_mines">Marked mines: 0</string>
     <string name="total_mines">Total mines: 20</string>
+    // Game Result
+    <string name="text_win">You Win !</string>
+    <string name="text_loose">You Loose :(</string>
 </resources>
