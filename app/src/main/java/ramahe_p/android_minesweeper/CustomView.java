@@ -8,6 +8,8 @@ import android.graphics.Paint.Style;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
 
 import java.util.Random;
 
@@ -46,11 +48,13 @@ public class CustomView extends View {
         }
     }
 
+    private boolean touch = true;
     private Cell[][] board;
     private Paint paintCell, paintLine, paintCovered, paintMarked, paintMine;
     private Paint paintTextMine, paintTextOne, paintTextTwo, paintTextThree, paintTextFour;
     private int minesNumber = 0;
 
+    // -- LifeCycle
     public CustomView(Context context) {
         super(context);
         init();
@@ -67,9 +71,7 @@ public class CustomView extends View {
     }
 
     private void init() {
-
         board = new Cell[10][10];
-
         paintCell = new Paint(Paint.ANTI_ALIAS_FLAG);
         paintLine = new Paint(Paint.ANTI_ALIAS_FLAG);
         paintCovered = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -98,6 +100,127 @@ public class CustomView extends View {
 
         fillBoard();
     }
+
+    public void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+
+        int boardWidth = canvas.getWidth(); // 720 ==> width of the custom view/canvas
+        int boardHeight = canvas.getHeight(); // 720 ==> height of the custom view/canvas
+        int endWidth = boardWidth / 10; // 72 ==> width of a cell
+        int endHeight = boardHeight / 10; // 72 ==> height of a cell
+
+        // Loop to fill the CustomView with cells
+        for (int i = 0; i < 10; i++) {
+            for (int j = 0; j < 10; j++) {
+                int startWidth = i * endWidth;
+                int startHeight = j * endHeight;
+
+                canvas.drawRect(startWidth, startHeight, startWidth + endWidth, startHeight + endHeight, paintLine);
+
+                // Check the state of the cell to put the good thing
+                if (board[i][j].getCellState() == cellState.COVERED) {
+                    canvas.drawRect(startWidth, startHeight, startWidth + endWidth, startHeight + endHeight, paintCovered);
+                } else if (board[i][j].getCellState() == cellState.MINE_CLICKED) {
+                    canvas.drawRect(startWidth, startHeight, startWidth + endWidth, startHeight + endHeight, paintMine);
+                    canvas.drawText("M", startWidth + endWidth / 2, startHeight + endHeight / 2, paintTextMine);
+                } else if (board[i][j].getCellState() == cellState.ONE_CLICKED) {
+                    canvas.drawRect(startWidth, startHeight, startWidth + endWidth, startHeight + endHeight, paintCovered);
+                    canvas.drawText("1", startWidth + endWidth / 2, startHeight + endHeight / 2, paintTextOne);
+                } else if (board[i][j].getCellState() == cellState.TWO_CLICKED) {
+                    canvas.drawRect(startWidth, startHeight, startWidth + endWidth, startHeight + endHeight, paintCovered);
+                    canvas.drawText("2", startWidth + endWidth / 2, startHeight + endHeight / 2, paintTextTwo);
+                } else if (board[i][j].getCellState() == cellState.THREE_CLICKED) {
+                    canvas.drawRect(startWidth, startHeight, startWidth + endWidth, startHeight + endHeight, paintCovered);
+                    canvas.drawText("3", startWidth + endWidth / 2, startHeight + endHeight / 2, paintTextThree);
+                } else if (board[i][j].getCellState() == cellState.FOUR_CLICKED) {
+                    canvas.drawRect(startWidth, startHeight, startWidth + endWidth, startHeight + endHeight, paintCovered);
+                    canvas.drawText("4", startWidth + endWidth / 2, startHeight + endHeight / 2, paintTextFour);
+                } else if (board[i][j].getCellState() == cellState.FIVE_CLICKED) {
+                    canvas.drawRect(startWidth, startHeight, startWidth + endWidth, startHeight + endHeight, paintCovered);
+                    canvas.drawText("5", startWidth + endWidth / 2, startHeight + endHeight / 2, paintTextFour);
+                } else if (board[i][j].getCellState() == cellState.SIX_CLICKED) {
+                    canvas.drawRect(startWidth, startHeight, startWidth + endWidth, startHeight + endHeight, paintCovered);
+                    canvas.drawText("6", startWidth + endWidth / 2, startHeight + endHeight / 2, paintTextFour);
+                } else if (board[i][j].getCellState() == cellState.SEVEN_CLICKED) {
+                    canvas.drawRect(startWidth, startHeight, startWidth + endWidth, startHeight + endHeight, paintCovered);
+                    canvas.drawText("7", startWidth + endWidth / 2, startHeight + endHeight / 2, paintTextFour);
+                } else if (board[i][j].getCellState() == cellState.EIGHT_CLICKED) {
+                    canvas.drawRect(startWidth, startHeight, startWidth + endWidth, startHeight + endHeight, paintCovered);
+                    canvas.drawText("8", startWidth + endWidth / 2, startHeight + endHeight / 2, paintTextFour);
+                } else {
+                    canvas.drawRect(startWidth, startHeight, startWidth + endWidth, startHeight + endHeight, paintCell);
+                }
+            }
+        }
+    }
+
+    // -- Events
+    public boolean onTouchEvent(MotionEvent event) {
+        if (touch) {
+            if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+
+                // get the exact cell I click by getting the values of the cell array
+                // not by getting the coordinates on the custom view
+                int boardWidth = (int) event.getX() * 10 / getMeasuredWidth();
+                int boardHeight = (int) event.getY() * 10 / getMeasuredHeight();
+                Cell touchedCell = board[boardWidth][boardHeight];
+
+                if (touchedCell.getCellState() == cellState.MINE || touchedCell.getCellState() == cellState.MINE_CLICKED) {
+                    touchedCell.setCellState(cellState.MINE_CLICKED);
+                    touch = false;
+                    invalidate();
+                    return true;
+                } else if (touchedCell.getCellState() == cellState.ONE || touchedCell.getCellState() == cellState.ONE_CLICKED) {
+                    board[boardWidth][boardHeight].setCellState(cellState.ONE_CLICKED);
+                    invalidate();
+                    return true;
+                } else if (touchedCell.getCellState() == cellState.TWO || touchedCell.getCellState() == cellState.TWO_CLICKED) {
+                    board[boardWidth][boardHeight].setCellState(cellState.TWO_CLICKED);
+                    invalidate();
+                    return true;
+                } else if (touchedCell.getCellState() == cellState.THREE || touchedCell.getCellState() == cellState.THREE_CLICKED) {
+                    touchedCell.setCellState(cellState.THREE_CLICKED);
+                    invalidate();
+                    return true;
+                } else if (touchedCell.getCellState() == cellState.FOUR || touchedCell.getCellState() == cellState.FOUR_CLICKED) {
+                    switch (getMinesAround(boardWidth, boardHeight)) {
+                        case 4:
+                            touchedCell.setCellState(cellState.FOUR_CLICKED);
+                            break;
+                        case 5:
+                            touchedCell.setCellState(cellState.FIVE_CLICKED);
+                            break;
+                        case 6:
+                            touchedCell.setCellState(cellState.SIX_CLICKED);
+                            break;
+                        case 7:
+                            touchedCell.setCellState(cellState.SEVEN_CLICKED);
+                            break;
+                        case 8:
+                            touchedCell.setCellState(cellState.EIGHT_CLICKED);
+                            break;
+                        default:
+                            touchedCell.setCellState(cellState.COVERED);
+                            break;
+                    }
+                    invalidate();
+                    return true;
+                } else {
+                    touchedCell.setCellState(cellState.COVERED);
+                    invalidate();
+                    return true;
+                }
+            }
+        }
+        return super.onTouchEvent(event);
+    }
+
+    @Override
+    public void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, widthMeasureSpec);
+    }
+
+    // -- Utilities
 
     /**
      * Put randomly 20 mines on the board
@@ -228,118 +351,17 @@ public class CustomView extends View {
         putNumbers();
     }
 
-    public void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
-
-        int boardWidth = canvas.getWidth(); // 720 ==> width of the custom view/canvas
-        int boardHeight = canvas.getHeight(); // 720 ==> height of the custom view/canvas
-        int endWidth = boardWidth / 10; // 72 ==> width of a cell
-        int endHeight = boardHeight / 10; // 72 ==> height of a cell
-
-        // Loop to fill the CustomView with cells
-        for (int i = 0; i < 10; i++) {
+    /**
+     * Reset game when clicking on the reset button
+     */
+    public void resetGame() {
+        for (int i = 0; i <10; i++) {
             for (int j = 0; j < 10; j++) {
-                int startWidth = i * endWidth;
-                int startHeight = j * endHeight;
-
-                canvas.drawRect(startWidth, startHeight, startWidth + endWidth, startHeight + endHeight, paintLine);
-
-                // Check the state of the cell to put the good thing
-                if (board[i][j].getCellState() == cellState.COVERED) {
-                    canvas.drawRect(startWidth, startHeight, startWidth + endWidth, startHeight + endHeight, paintCovered);
-                } else if (board[i][j].getCellState() == cellState.MINE_CLICKED) {
-                    canvas.drawRect(startWidth, startHeight, startWidth + endWidth, startHeight + endHeight, paintMine);
-                    canvas.drawText("M", startWidth + endWidth / 2, startHeight + endHeight / 2, paintTextMine);
-                } else if (board[i][j].getCellState() == cellState.ONE_CLICKED) {
-                    canvas.drawRect(startWidth, startHeight, startWidth + endWidth, startHeight + endHeight, paintCovered);
-                    canvas.drawText("1", startWidth + endWidth / 2, startHeight + endHeight / 2, paintTextOne);
-                } else if (board[i][j].getCellState() == cellState.TWO_CLICKED) {
-                    canvas.drawRect(startWidth, startHeight, startWidth + endWidth, startHeight + endHeight, paintCovered);
-                    canvas.drawText("2", startWidth + endWidth / 2, startHeight + endHeight / 2, paintTextTwo);
-                } else if (board[i][j].getCellState() == cellState.THREE_CLICKED) {
-                    canvas.drawRect(startWidth, startHeight, startWidth + endWidth, startHeight + endHeight, paintCovered);
-                    canvas.drawText("3", startWidth + endWidth / 2, startHeight + endHeight / 2, paintTextThree);
-                } else if (board[i][j].getCellState() == cellState.FOUR_CLICKED) {
-                    canvas.drawRect(startWidth, startHeight, startWidth + endWidth, startHeight + endHeight, paintCovered);
-                    canvas.drawText("4", startWidth + endWidth / 2, startHeight + endHeight / 2, paintTextFour);
-                } else if (board[i][j].getCellState() == cellState.FIVE_CLICKED) {
-                    canvas.drawRect(startWidth, startHeight, startWidth + endWidth, startHeight + endHeight, paintCovered);
-                    canvas.drawText("5", startWidth + endWidth / 2, startHeight + endHeight / 2, paintTextFour);
-                } else if (board[i][j].getCellState() == cellState.SIX_CLICKED) {
-                    canvas.drawRect(startWidth, startHeight, startWidth + endWidth, startHeight + endHeight, paintCovered);
-                    canvas.drawText("6", startWidth + endWidth / 2, startHeight + endHeight / 2, paintTextFour);
-                } else if (board[i][j].getCellState() == cellState.SEVEN_CLICKED) {
-                    canvas.drawRect(startWidth, startHeight, startWidth + endWidth, startHeight + endHeight, paintCovered);
-                    canvas.drawText("7", startWidth + endWidth / 2, startHeight + endHeight / 2, paintTextFour);
-                } else if (board[i][j].getCellState() == cellState.EIGHT_CLICKED) {
-                    canvas.drawRect(startWidth, startHeight, startWidth + endWidth, startHeight + endHeight, paintCovered);
-                    canvas.drawText("8", startWidth + endWidth / 2, startHeight + endHeight / 2, paintTextFour);
-                } else {
-                    canvas.drawRect(startWidth, startHeight, startWidth + endWidth, startHeight + endHeight, paintCell);
-                }
+                board[i][j].setCellState(cellState.INIT);
             }
         }
-    }
-
-    public boolean onTouchEvent(MotionEvent event) {
-        if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
-
-            // get the exact cell I click by getting the values of the cell array
-            // not by getting the coordinates on the custom view
-            int boardWidth = (int) event.getX() * 10 / getMeasuredWidth();
-            int boardHeight = (int) event.getY() * 10 / getMeasuredHeight();
-            Cell touchedCell = board[boardWidth][boardHeight];
-
-            if (touchedCell.getCellState() == cellState.MINE || touchedCell.getCellState() == cellState.MINE_CLICKED) {
-                touchedCell.setCellState(cellState.MINE_CLICKED);
-                invalidate();
-                return true;
-            } else if (touchedCell.getCellState() == cellState.ONE || touchedCell.getCellState() == cellState.ONE_CLICKED) {
-                board[boardWidth][boardHeight].setCellState(cellState.ONE_CLICKED);
-                invalidate();
-                return true;
-            } else if (touchedCell.getCellState() == cellState.TWO || touchedCell.getCellState() == cellState.TWO_CLICKED) {
-                board[boardWidth][boardHeight].setCellState(cellState.TWO_CLICKED);
-                invalidate();
-                return true;
-            } else if (touchedCell.getCellState() == cellState.THREE || touchedCell.getCellState() == cellState.THREE_CLICKED) {
-                touchedCell.setCellState(cellState.THREE_CLICKED);
-                invalidate();
-                return true;
-            } else if (touchedCell.getCellState() == cellState.FOUR || touchedCell.getCellState() == cellState.FOUR_CLICKED) {
-                switch (getMinesAround(boardWidth, boardHeight)) {
-                    case 4:
-                        touchedCell.setCellState(cellState.FOUR_CLICKED);
-                        break;
-                    case 5:
-                        touchedCell.setCellState(cellState.FIVE_CLICKED);
-                        break;
-                    case 6:
-                        touchedCell.setCellState(cellState.SIX_CLICKED);
-                        break;
-                    case 7:
-                        touchedCell.setCellState(cellState.SEVEN_CLICKED);
-                        break;
-                    case 8:
-                        touchedCell.setCellState(cellState.EIGHT_CLICKED);
-                        break;
-                    default:
-                        touchedCell.setCellState(cellState.COVERED);
-                        break;
-                }
-                invalidate();
-                return true;
-            } else {
-                touchedCell.setCellState(cellState.COVERED);
-                invalidate();
-                return true;
-            }
-        }
-        return super.onTouchEvent(event);
-    }
-
-    @Override
-    public void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        super.onMeasure(widthMeasureSpec, widthMeasureSpec);
+        init();
+        touch = true;
+        invalidate();
     }
 }
