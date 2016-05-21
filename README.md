@@ -1,2 +1,2 @@
 # android-minesweeper
-Reproduction of a Minesweeper in Android
+This is reproduction of a basic Minesweeper in Android.
